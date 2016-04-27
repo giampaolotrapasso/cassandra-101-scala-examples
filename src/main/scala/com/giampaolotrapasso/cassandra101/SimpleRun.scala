@@ -2,6 +2,7 @@ package com.giampaolotrapasso.cassandra101
 
 import com.datastax.driver.core.{ ResultSet, Session }
 import com.giampaolotrapasso.cassandra101.models.Book
+import com.websudos.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,7 +15,7 @@ import scala.util.{ Failure, Success, Try }
   brew install ccm
   sudo ifconfig lo0 alias 127.0.0.2
   sudo ifconfig lo0 alias 127.0.0.3
-  ccm create -v 2.1.5 -n 3 clusterTest
+  ccm create -v 2.2.5 -n 3 clusterTest
   ccm start
 */
 
@@ -22,7 +23,7 @@ object SimpleRun extends App {
 
   def doStuff(implicit session: Session) = {
 
-    implicit val space = BookDatabase.space
+    implicit val space: KeySpace = BookDatabase.space
 
     Await.result(BookDatabase.autocreate().future, 10 seconds)
 
@@ -30,23 +31,22 @@ object SimpleRun extends App {
       author = "Melville",
       born = 1819,
       title = "White-Jacket",
-      published = 1850
+      published = Some(1850)
     )
 
-    val book2 = book1.copy(title = "Moby Dick", published = 1851)
+    val book2 = book1.copy(title = "Moby Dick", published = Some(1851))
 
     val book3 = Book(
       author = "Hemingway",
       born = 1899,
-      title = "For Whom the Bell tolls",
-      published = 1940
+      title = "For Whom the Bell tolls"
     )
 
     val book4 = Book(
       author = "Dino Buzzati",
       born = 1906,
       title = "Il deserto dei tartari",
-      published = 1940
+      published = Some(1940)
     )
 
     val books: List[Future[ResultSet]] = List(book1, book2, book3, book4).map(p => BookDatabase.insertBook(p))

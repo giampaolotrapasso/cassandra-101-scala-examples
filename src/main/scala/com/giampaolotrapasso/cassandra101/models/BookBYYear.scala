@@ -11,7 +11,7 @@ case class BookByYear(
   book: String
 )
 
-class BooksByYearDefinition extends CassandraTable[BooksByYearDefinition, BookByYear] {
+class BooksByYearTable extends CassandraTable[BooksByYearTable, BookByYear] {
 
   override val tableName = "books_by_year"
 
@@ -27,7 +27,7 @@ class BooksByYearDefinition extends CassandraTable[BooksByYearDefinition, BookBy
   }
 }
 
-abstract class BooksByYear extends BooksByYearDefinition with RootConnector {
+abstract class BooksByYearDAO extends BooksByYearTable with RootConnector {
 
   def insertNewStatement(bookByYear: BookByYear) = {
     insert

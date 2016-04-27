@@ -11,16 +11,20 @@ class Database(val keySpaceConnector: KeySpaceDef) extends DatabaseImpl(keySpace
 
   object books extends BooksDAO with keySpaceConnector.Connector
 
-  object booksByYear extends BooksByYear with keySpaceConnector.Connector
+  object booksByYear extends BooksByYearDAO with keySpaceConnector.Connector
 
   def insertBook(book: Book) = {
 
-    val byYear = BookByYear(book.published, book.title)
-
-    Batch.logged
+    var batch = Batch.logged
       .add(books.insertNewStatement(book))
-      .add(booksByYear.insertNewStatement(byYear))
-      .future()
+
+    book.published.map { year =>
+      val byYear = BookByYear(book.published.get, book.title)
+      batch = batch.add(booksByYear.insertNewStatement(byYear))
+    }
+
+    batch.future()
+
   }
 
   def selectByTitleWithFiltering(title: String): Future[List[Book]] = {
